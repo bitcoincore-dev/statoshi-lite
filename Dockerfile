@@ -39,7 +39,7 @@ RUN sed -i 's/memory          = psutil.phymem_usage()/memory          = psutil.v
 # DOCS      https://github.com/ArtDodger/statoshi
 
 
-RUN cd /tmp && git clone https://github.com/ArtDodger/statoshi
+RUN cd /tmp && git clone https://github.com/bitcoincore-dev/statoshi
 RUN cd /tmp/statoshi && ./autogen.sh
 RUN cd /tmp/statoshi && ./configure --disable-wallet --with-cli --without-gui --enable-hardening --without-miniupnpc
 RUN cd /tmp/statoshi && make
