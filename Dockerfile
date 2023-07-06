@@ -24,10 +24,14 @@ RUN useradd -d /home/statoshi -m -s /bin/bash -c "Statoshi" -p `openssl passwd -
 RUN apt-get install -y sudo
 RUN echo "statoshi ALL=(ALL) ALL" >> /etc/sudoers
 RUN mkdir /home/statoshi/.bitcoin && mkdir /home/statoshi/.scripts && mkdir /home/statoshi/log
-RUN cd /home/statoshi/.scripts && wget "http://yabtcn.info/statoshi/bitcoind.check.example" -O bitcoind.check.sh >/dev/null 2>&1 && wget "http://yabtcn.info/statoshi/statsd.check.example" -O statsd.check.sh >/dev/null 2>&1 && wget "http://yabtcn.info/statoshi/systemmetricsd.check.example" -O systemmetricsd.check.sh >/dev/null 2>&1 && chmod +x *.sh
-RUN wget "http://yabtcn.info/statoshi/bitcoin.conf.example" -O /home/statoshi/.bitcoin/bitcoin.conf >/dev/null 2>&1
+##REF: https://raw.githubusercontent.com/bitcoincore-dev/statoshi-lite/master/bitcoind.check.example
+RUN cd /home/statoshi/.scripts && wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/master/bitcoind.check.example" -O bitcoind.check.sh >/dev/null 2>&1
+RUN cd /home/statoshi/.scripts && wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/master/statsd.check.example" -O statsd.check.sh >/dev/null 2>&1
+RUN cd /home/statoshi/.scripts && wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/master/systemmetricsd.check.example" -O systemmetricsd.check.sh >/dev/null 2>&1
+RUN cd /home/statoshi/.scripts && chmod +x *.sh
+RUN wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/master/bitcoin.conf.example" -O /home/statoshi/.bitcoin/bitcoin.conf >/dev/null 2>&1
 RUN chown statoshi:statoshi -R /home/statoshi
-RUN cd /home/statoshi && git clone http://github.com/jlopp/bitcoin-utils
+RUN cd /home/statoshi && git clone https://github.com/bitcoincore-dev/bitcoin-utils.git
 RUN sed -i 's/memory          = psutil.phymem_usage()/memory          = psutil.virtual_memory()/g' /home/statoshi/bitcoin-utils/systemMetricsDaemon.py
 
 
@@ -39,9 +43,9 @@ RUN sed -i 's/memory          = psutil.phymem_usage()/memory          = psutil.v
 # DOCS      https://github.com/ArtDodger/statoshi
 
 
-RUN cd /tmp && git clone https://github.com/bitcoincore-dev/statoshi
-RUN cd /tmp/statoshi && ./autogen.sh
-RUN cd /tmp/statoshi && ./configure --disable-wallet --with-cli --without-gui --enable-hardening --without-miniupnpc
+RUN cd /tmp && git clone https://github.com/bitcoincore-dev/statoshi.git
+RUN cd /tmp/statoshi && ./autogen.sh configure
+RUN cd /tmp/statoshi && ./configure --disable-wallet --with-cli --without-gui --enable-hardening --without-miniupnpc --disable-tests --disable-bench --disable-fuzz
 RUN cd /tmp/statoshi && make
 RUN cd /tmp/statoshi && make install
 
@@ -100,8 +104,11 @@ RUN cd /tmp/graphite-web-0.9.13 && python setup.py install
 
 
 RUN apt-get install -y apache2.2-common
-RUN wget "http://yabtcn.info/statoshi/000-default.conf.example" -O /etc/apache2/sites-available/000-default.conf >/dev/null 2>&1 && wget "http://yabtcn.info/statoshi/default-ssl.conf.example" -O /etc/apache2/sites-available/default-ssl.conf >/dev/null 2>&1 && wget "http://yabtcn.info/statoshi/graphite.conf.example" -O /etc/apache2/sites-available/graphite.conf >/dev/null 2>&1
-RUN cd /opt/graphite/bin && wget "http://yabtcn.info/statoshi/graphite.check.example" -O /opt/graphite/bin/graphite.check.sh >/dev/null 2>&1 && chmod +x graphite.check.sh
+RUN wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/000-default.conf.example" -O /etc/apache2/sites-available/000-default.conf >/dev/null 2>&1
+RUN wget "https:/raw./github.com/statoshi-lite/master/default-ssl.conf.example" -O /etc/apache2/sites-available/default-ssl.conf >/dev/null 2>&1
+RUN wget "https://raw.github.com/statoshi-lite/master/graphite.conf.example" -O /etc/apache2/sites-available/graphite.conf >/dev/null 2>&1
+RUN cd /opt/graphite/bin && wget "https://raw.github.com/statoshi-lite/master/graphite.check.example" -O /opt/graphite/bin/graphite.check.sh >/dev/null 2>&1
+RUN chmod +x graphite.check.sh
 RUN a2ensite default-ssl.conf graphite.conf
 RUN echo "\r\nServerName localhost\r\n" >> /etc/apache2/apache2.conf
 RUN echo "<Directory />\r\nOrder allow,deny\r\nDeny from all\r\nAllow from 127.0.0.1\r\nAllow from 192.168.0.0/24\r\nAllow from 172.17.0.0/16\r\n#Allow from all\r\n</Directory>\r\n" >> /etc/apache2/httpd.conf
@@ -126,8 +133,9 @@ RUN echo "deb https://packagecloud.io/grafana/stable/debian/ wheezy main" >> /et
 RUN wget -qO - "https://packagecloud.io/gpg.key" | apt-key add - >/dev/null 2>&1
 RUN apt-get update
 RUN apt-get install grafana
-RUN wget "http://yabtcn.info/statoshi/grafana.home.json.example" -O /usr/share/grafana/public/dashboards/home.json >/dev/null 2>&1 && wget "http://yabtcn.info/statoshi/grafana.defaults.ini.example" -O /usr/share/grafana/conf/defaults.ini >/dev/null 2>&1
-RUN wget "http://yabtcn.info/statoshi/grafana.defaults.ini.example" -O /usr/share/grafana/conf/defaults.ini >/dev/null 2>&1
+RUN wget "https://raw.github.com/statoshi-lite/master/grafana.home.json.example" -O /usr/share/grafana/public/dashboards/home.json >/dev/null 2>&1
+RUN wget "https://raw.github.com/statoshi-lite/master/grafana.defaults.ini.example" -O /usr/share/grafana/conf/defaults.ini >/dev/null 2>&1
+RUN wget "https://raw.github.com/statoshi-lite/master/grafana.defaults.ini.example" -O /usr/share/grafana/conf/defaults.ini >/dev/null 2>&1
 RUN wget "http://statoshi.info/img/statoshi.png" -O /usr/share/grafana/public/img/statoshi.png >/dev/null 2>&1
 
 
@@ -138,8 +146,9 @@ RUN wget "http://statoshi.info/img/statoshi.png" -O /usr/share/grafana/public/im
 # TODO      Hardening the system, purge unnecessary packages, setting up iptables
 
 
-RUN wget "http://yabtcn.info/statoshi/bitcoind.conf.example" -O /etc/default/bitcoind >/dev/null 2>&1 && wget "http://yabtcn.info/statoshi/bitcoind.init.example" -O /etc/init.d/bitcoind >/dev/null 2>&1
+RUN wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/bitcoind.conf.example" -O /etc/default/bitcoind >/dev/null 2>&1
+RUN wget "https://raw.github.com/bitcoincore-dev/statoshi-lite/bitcoind.init.example" -O /etc/init.d/bitcoind >/dev/null 2>&1
 RUN chmod +x /etc/init.d/bitcoind
 RUN apt-get install -y rcconf sysv-rc-conf cron
 RUN update-rc.d bitcoind defaults && update-rc.d grafana-server defaults && update-rc.d cron defaults
-RUN rm /etc/crontab && wget "http://yabtcn.info/statoshi/crontab.example" -O /etc/crontab >/dev/null 2>&1
+RUN rm /etc/crontab && wget "https://raw.bitcoincore-dev/statoshi-lite/crontab.example" -O /etc/crontab >/dev/null 2>&1
